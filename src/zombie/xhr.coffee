@@ -134,15 +134,21 @@ class XMLHttpRequest
       # change, then set the response fields and change the state to DONE.
       extractBody = =>
         @responseText = response.body?.toString() || ""
-        @responseXML = null
+        PROCESSING_INSTRUCTION_NODE = 7
+        DOMParser  = require('xmldom').DOMParser
+        parser     = new DOMParser()
+        doc        = parser.parseFromString(_this.responseText, "text/xml")
+        firstChild = doc.firstChild
+        doc.removeChild(firstChild) if firstChild.nodeType == PROCESSING_INSTRUCTION_NODE
+        @responseXML = doc
         @onload.call(@) if @onload
         @_stateChanged(XMLHttpRequest.DONE)
-       
+
       if request["async"]
         @_window._eventQueue.enqueue extractBody
       else
         extractBody()
-  
+
     return
 
   # Sets the value of an HTTP request header.You must call setRequestHeader()
