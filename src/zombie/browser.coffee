@@ -109,6 +109,10 @@ class Browser extends EventEmitter
 
     # Window has been opened
     @on "opened", (window)->
+      if typeof global._$jscoverage == 'undefined'
+        global._$jscoverage = {}
+      if typeof window._$jscoverage == 'undefined'
+        window._$jscoverage = global._$jscoverage
       browser.log "Opened window", window.location.href, window.name || ""
 
     # Window has been closed
@@ -342,6 +346,29 @@ class Browser extends EventEmitter
   # Returns a promise.
   click: (selector, callback)->
     return @fire(selector, "click", callback)
+
+
+  # Fire a keydown event and returns a promise.
+  #
+  # selector - Element or CSS selector
+  # keyCode  - Key code
+  # callback - Called with error or nothing
+  #
+  # Returns a promise.
+  keydown: (selector, keyCode, callback)->
+    unless @window
+      throw new Error("No window open")
+    target = @query(selector)
+    unless target && target.dispatchEvent
+      throw new Error("No target element (note: call with selector/element, event name and callback)")
+    eventType = "HTMLEvents"
+    eventName = "keydown"
+    event = @document.createEvent(eventType)
+    event.initEvent(eventName, true, true)
+    event.which = keyCode
+    target.dispatchEvent(event)
+    return @wait(callback)
+
 
   # Dispatch asynchronously.  Returns true if preventDefault was set.
   dispatchEvent: (selector, event)->
