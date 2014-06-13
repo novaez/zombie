@@ -323,10 +323,11 @@ class Browser extends EventEmitter
   # callback - Called with error or nothing
   #
   # Returns a promise
-  fire: (selector, eventName, callback)->
+  fire: (selector, eventName, callback, context)->
     unless @window
       throw new Error("No window open")
-    target = @query(selector)
+    context ||= @document
+    target = @query(selector, context)
     unless target && target.dispatchEvent
       throw new Error("No target element (note: call with selector/element, event name and callback)")
     if ~MOUSE_EVENT_NAMES.indexOf(eventName)
